@@ -12,6 +12,7 @@ export interface TTSResponse {
   status: "success" | "error";
   data: {
     audioPath: string;
+    audioBlob: Uint8Array;
   };
 }
 

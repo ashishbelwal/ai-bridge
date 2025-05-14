@@ -87,7 +87,7 @@ export const generateSpeech = async ({
   voiceName,
   ssmlGender = protos.google.cloud.texttospeech.v1.SsmlVoiceGender.NEUTRAL,
   audioEncoding = protos.google.cloud.texttospeech.v1.AudioEncoding.MP3,
-}: TTSRequest): Promise<string> => {
+}: TTSRequest): Promise<{ filePath: string; audioBlob: Uint8Array }> => {
   try {
     const request = {
       input: { text },
@@ -102,16 +102,25 @@ export const generateSpeech = async ({
       throw new AppError("No audio content received from Google TTS", 500);
     }
 
+    // Ensure audioContent is Uint8Array
+    const audioContent =
+      response.audioContent instanceof Uint8Array
+        ? response.audioContent
+        : new Uint8Array(Buffer.from(response.audioContent));
+
     // Generate unique filename using timestamp
     const timestamp = new Date().getTime();
     const filename = `speech-${timestamp}.mp3`;
     const outputPath = path.join(OUTPUT_DIR, filename);
 
     // Write audio content to file
-    fs.writeFileSync(outputPath, response.audioContent, "binary");
+    fs.writeFileSync(outputPath, audioContent, "binary");
 
-    // Return a web-friendly path
-    return `/audio/${filename}`;
+    // Return both the web-friendly path and the audio content
+    return {
+      filePath: `/output/${filename}`,
+      audioBlob: audioContent,
+    };
   } catch (error) {
     if (error instanceof AppError) {
       throw error;

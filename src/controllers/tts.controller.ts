@@ -20,7 +20,7 @@ export const generateTTS = async (
       throw new AppError("Text is required", 400);
     }
 
-    const audioPath = await generateSpeech({
+    const { filePath, audioBlob } = await generateSpeech({
       text,
       languageCode,
       voiceName,
@@ -31,7 +31,8 @@ export const generateTTS = async (
     const response: TTSResponse = {
       status: "success",
       data: {
-        audioPath,
+        audioPath: filePath,
+        audioBlob,
       },
     };
 
